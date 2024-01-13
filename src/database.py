@@ -43,10 +43,10 @@ Base.metadata.create_all(bind=engine)
 
 # Дефолтные записи перед созданием таблиц
 default_channels = [
-    Channel(id=1949156593, name='Хмельницкий', link='dinero'),
-    Channel(id=1850257894, name='Луцьк', link='dinero'),
-    Channel(id=1677904749, name='Киев', link='dinero'),
-    Channel(id=1607603790, name='Тернополь', link='dinero'),
+    Channel(id=1949156593, name='Хмельницкий', link='https://t.me/+tLXxnvJlzZo0M2Ey'),
+    Channel(id=1850257894, name='Луцьк', link='https://t.me/+jNKHP_USSJZhNzgy'),
+    Channel(id=1677904749, name='Киев', link='https://t.me/+cG_xCnSl7thiMzgy'),
+    Channel(id=1607603790, name='Тернополь', link='https://t.me/+oGriP3680ec1NDVi'),
 ]
 
 # Создаем объект сессии и добавляем дефолтные записи

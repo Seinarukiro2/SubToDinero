@@ -50,7 +50,7 @@ async def handle_start(event):
         else:
             logging.info(f"Пользователь уже существует: ID={db_user.id}, Telegram ID={db_user.telegram_id}")
 
-        if db_user and db_user.subscribed_all:
+        if db_user and db_user.subscribed_all or db_user and db_user.is_admin_session_active:
             # Если пользователь подписан на все каналы, выводим сообщение с меню/кнопками
             await event.respond("Вы уже подписаны на все каналы. Здесь будет ваше меню.")
             # Здесь добавим код для вывода кнопок с меню (пока заглушка)
