@@ -49,7 +49,6 @@ default_channels = [
     Channel(id=1607603790, name='Тернополь', link='https://t.me/+oGriP3680ec1NDVi'),
 ]
 
-# Создаем объект сессии и добавляем дефолтные записи
 session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 session.add_all(default_channels)
 session.commit()
