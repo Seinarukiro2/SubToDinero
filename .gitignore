@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 secrets.json
+src/bot_session.session
+src/bot_database.db
