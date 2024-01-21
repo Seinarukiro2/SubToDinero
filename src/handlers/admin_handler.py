@@ -1,9 +1,8 @@
-# handlers/admin_handler.py
-
 from telethon.sync import events
 from database import User, SessionLocal
 import logging
-import asyncio
+
+
 
 async def handle_set_admin(event):
     user_id = event.sender_id

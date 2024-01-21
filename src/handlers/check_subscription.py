@@ -1,5 +1,6 @@
 from database import SessionLocal, User
 
+
 def check_subscription(user_id):
     session = SessionLocal()
 

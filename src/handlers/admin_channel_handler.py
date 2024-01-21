@@ -13,6 +13,7 @@ logging.basicConfig(
     ]
 )
 
+
 async def handle_add_admin_channel(event, client):
     user_id = event.sender_id
 
@@ -21,7 +22,6 @@ async def handle_add_admin_channel(event, client):
         session = SessionLocal()
 
         # Отправляем запрос на ввод ссылки на канал
-        
 
         # Создаем объект конверсации
         async with event.client.conversation(event.chat_id) as conv:
@@ -51,7 +51,8 @@ async def handle_add_admin_channel(event, client):
                         await event.respond("Канал успешно добавлен.")
                     else:
                         # Если бот не администратор, сообщаем, что его нужно добавить в администраторы канала
-                        logging.info(f"Бот не является администратором канала: Ссылка={channel_link}")
+                        logging.info(
+                            f"Бот не является администратором канала: Ссылка={channel_link}")
                         await event.respond("Добавьте бота в администраторы канала.")
                 except Exception as e:
                     logging.error(f"Ошибка при получении информации о канале: {e}")

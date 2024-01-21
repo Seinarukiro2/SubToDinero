@@ -162,3 +162,4 @@ cython_debug/
 secrets.json
 src/bot_session.session
 src/bot_database.db
+.DS_Store

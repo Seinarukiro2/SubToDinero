@@ -2,6 +2,7 @@ from functools import wraps
 from telethon.sync import events
 from database import User, SessionLocal
 
+
 def admin_session_required(func):
     @wraps(func)
     async def wrapper(event, *args, **kwargs):
