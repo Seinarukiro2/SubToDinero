@@ -46,9 +46,9 @@ class User(Base):
         all_channels = session.query(Channel).all()
         return all_channels
 
-    def remaining_channels_to_subscribe(self):
-        all_channel_ids = set(channel.id for channel in session.query(ToSubscribeChannel).all())
-        subscribed_channel_ids = set(channel.id for channel in self.subscribed_to_channels)
+    def remaining_channels_to_subscribe(self, session):
+        all_channel_ids = set(channel.name for channel in session.query(ToSubscribeChannel).all())
+        subscribed_channel_ids = set(channel.name for channel in self.subscribed_to_channels)
         remaining_channels = len(all_channel_ids - subscribed_channel_ids)
         return remaining_channels
 

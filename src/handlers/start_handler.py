@@ -61,7 +61,7 @@ async def handle_start(event):
             username = user.username if user.username else "Немає імені користувача"
             balance = len(user.subscribed_to_channels) * 4  # Assuming each channel costs 4 in currency
             
-            remaining_channels = user.remaining_channels_to_subscribe
+            remaining_channels = user.remaining_channels_to_subscribe(session)
 
             menu_text = (
                 f"Ласкаво просимо, {username}!\n"
