@@ -1,7 +1,7 @@
 from database import SessionLocal, User
 
 
-def check_subscription(user_id):
+async def check_subscription(user_id):
     session = SessionLocal()
 
     try:
@@ -9,11 +9,11 @@ def check_subscription(user_id):
 
         if user:
             if user.subscribed_all or user.is_admin_session_active:
-                return True  # Пользователь подписан на все каналы
+                return True 
             else:
-                return False  # Пользователь не подписан на все каналы
+                return False
         else:
-            return False  # Пользователь не найден в базе данных
+            return False
 
     finally:
         session.close()

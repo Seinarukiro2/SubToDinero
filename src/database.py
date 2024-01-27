@@ -1,28 +1,42 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, Table, ForeignKey
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Boolean,
+    Table,
+    ForeignKey,
+)
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
-DATABASE_URL = 'sqlite:///bot_database.db'
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False}, pool_pre_ping=True)
+DATABASE_URL = "sqlite:///bot_database.db"
+engine = create_engine(
+    DATABASE_URL, connect_args={"check_same_thread": False}, pool_pre_ping=True
+)
 Base = declarative_base()
 
 user_channel_association = Table(
-    'user_channel_association',
+    "user_channel_association",
     Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.telegram_id')),
-    Column('channel_id', Integer, ForeignKey('channels.id'))
+    Column("user_id", Integer, ForeignKey("users.telegram_id")),
+    Column("channel_id", Integer, ForeignKey("channels.id")),
 )
 
 user_subscribe_channel_association = Table(
-    'user_subscribe_channel_association',
+    "user_subscribe_channel_association",
     Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.telegram_id')),
-    Column('to_subscribe_channel_name', String, ForeignKey('to_subscribe_channels.name'))
+    Column("user_id", Integer, ForeignKey("users.telegram_id")),
+    Column(
+        "to_subscribe_channel_name", String, ForeignKey("to_subscribe_channels.name")
+    ),
 )
 
+
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     telegram_id = Column(Integer, unique=True, primary_key=True, index=True)
     username = Column(String, index=True, nullable=True)
@@ -32,9 +46,13 @@ class User(Base):
     is_admin_session_active = Column(Boolean, default=False)
     subscribed_all = Column(Boolean, default=False)
     subscribed_channels = relationship(
-        "Channel", secondary=user_channel_association, back_populates="subscribers")
+        "Channel", secondary=user_channel_association, back_populates="subscribers"
+    )
     subscribed_to_channels = relationship(
-        "ToSubscribeChannel", secondary=user_subscribe_channel_association, back_populates="subscribers")
+        "ToSubscribeChannel",
+        secondary=user_subscribe_channel_association,
+        back_populates="subscribers",
+    )
 
     def update_subscribed_all(self):
         subscribed_channel_ids = set(channel.id for channel in self.subscribed_channels)
@@ -47,30 +65,37 @@ class User(Base):
         return all_channels
 
     def remaining_channels_to_subscribe(self, session):
-        all_channel_ids = set(channel.name for channel in session.query(ToSubscribeChannel).all())
-        subscribed_channel_ids = set(channel.name for channel in self.subscribed_to_channels)
-        remaining_channels = len(all_channel_ids - subscribed_channel_ids)
+        all_channels = session.query(ToSubscribeChannel).all()
+        subscribed_channels = set(self.subscribed_to_channels)
+        remaining_channels = [
+            channel for channel in all_channels if channel not in subscribed_channels
+        ]
         return remaining_channels
 
 
 class ToSubscribeChannel(Base):
-    __tablename__ = 'to_subscribe_channels'
+    __tablename__ = "to_subscribe_channels"
 
     name = Column(String, primary_key=True, unique=True, index=True)
     link = Column(String)
     subscribers = relationship(
-        "User", secondary=user_subscribe_channel_association, back_populates="subscribed_to_channels")
+        "User",
+        secondary=user_subscribe_channel_association,
+        back_populates="subscribed_to_channels",
+    )
 
 
 class Channel(Base):
-    __tablename__ = 'channels'
+    __tablename__ = "channels"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     link = Column(String)
 
     subscribers = relationship(
-        "User", secondary=user_channel_association, back_populates="subscribed_channels")
+        "User", secondary=user_channel_association, back_populates="subscribed_channels"
+    )
+
 
 Base.metadata.create_all(bind=engine)
 

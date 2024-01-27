@@ -18,7 +18,9 @@ def admin_session_required(func):
             if db_user and db_user.is_admin_session_active:
                 return await func(event, *args, **kwargs)
             else:
-                await event.respond("Админская сессия не активирована. Используйте /set_admin для активации.")
+                await event.respond(
+                    "Админская сессия не активирована. Используйте /set_admin для активации."
+                )
         except Exception as e:
             print(f"Ошибка при проверке админской сессии: {e}")
         finally:

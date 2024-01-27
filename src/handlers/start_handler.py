@@ -9,13 +9,12 @@ from buttons import get_channel_buttons
 from telethon.tl import types
 from menus import get_user_menu_text
 from telethon.tl.custom import Button
+
 # Настройка конфигурации логирования
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] - %(message)s',
-    handlers=[
-        logging.StreamHandler()
-    ]
+    format="%(asctime)s [%(levelname)s] - %(message)s",
+    handlers=[logging.StreamHandler()],
 )
 
 
@@ -24,11 +23,17 @@ async def handle_start(event):
     username = event.sender.username
 
     try:
-        command_text = event.raw_text.split(' ', 1)[1] if len(
-            event.raw_text.split(' ', 1)) > 1 else None
+        command_text = (
+            event.raw_text.split(" ", 1)[1]
+            if len(event.raw_text.split(" ", 1)) > 1
+            else None
+        )
         phone_number = event.contact.phone_number if event.contact else None
-        source_start = command_text.split(
-            '_')[1] if command_text and command_text.startswith('r_') else None
+        source_start = (
+            command_text.split("_")[1]
+            if command_text and command_text.startswith("r_")
+            else None
+        )
 
         session = SessionLocal()
 
@@ -39,24 +44,31 @@ async def handle_start(event):
                 telegram_id=user_id,
                 username=username,
                 phone_number=phone_number,
-                source_start=source_start
+                source_start=source_start,
             )
             session.add(new_user)
             session.commit()
             session.refresh(new_user)
 
-            logging.info(f"Новый пользователь: Telegram ID={new_user.telegram_id}, "
-                         f"Время создания={new_user.first_start_date.strftime('%Y-%m-%d %H:%M:%S')}")
+            logging.info(
+                f"Новый пользователь: Telegram ID={new_user.telegram_id}, "
+                f"Время создания={new_user.first_start_date.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
         else:
             logging.info(
-                f"Пользователь уже существует: Telegram ID={db_user.telegram_id}")
+                f"Пользователь уже существует: Telegram ID={db_user.telegram_id}"
+            )
 
-        if db_user and db_user.subscribed_all or db_user and db_user.is_admin_session_active:
+        if (
+            db_user
+            and db_user.subscribed_all
+            or db_user
+            and db_user.is_admin_session_active
+        ):
             await get_user_menu_text(event=event, user=db_user, session=session)
         else:
             await event.respond(
-                SUBSCRIPTION_MENU_TEXT.get('uk'),
-                buttons=get_channel_buttons()
+                SUBSCRIPTION_MENU_TEXT.get("uk"), buttons=get_channel_buttons()
             )
 
     except Exception as e:

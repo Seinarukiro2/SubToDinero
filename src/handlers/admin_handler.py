@@ -3,7 +3,6 @@ from database import User, SessionLocal
 import logging
 
 
-
 async def handle_set_admin(event):
     user_id = event.sender_id
 
@@ -43,7 +42,9 @@ async def handle_set_admin(event):
                 await event.client.run_until_disconnected()
 
         else:
-            await event.respond("Вы еще не зарегистрированы. Используйте /start для начала.")
+            await event.respond(
+                "Вы еще не зарегистрированы. Используйте /start для начала."
+            )
     except Exception as e:
         logging.error(f"Ошибка при обработке команды /set_admin: {e}")
     finally:
