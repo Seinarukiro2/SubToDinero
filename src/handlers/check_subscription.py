@@ -9,7 +9,7 @@ async def check_subscription(user_id):
 
         if user:
             if user.subscribed_all or user.is_admin_session_active:
-                return True 
+                return True
             else:
                 return False
         else:

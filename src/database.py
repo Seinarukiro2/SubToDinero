@@ -43,6 +43,7 @@ class User(Base):
     phone_number = Column(String, nullable=True)
     first_start_date = Column(DateTime, default=datetime.utcnow)
     source_start = Column(String, nullable=True)
+    balance = Column(Integer, nullable=True, default=0)
     is_admin_session_active = Column(Boolean, default=False)
     subscribed_all = Column(Boolean, default=False)
     subscribed_channels = relationship(

@@ -11,7 +11,9 @@ from handlers.deactivate_admin_handler import deactivate_admin_session
 from handlers.channel_join_request_handler import handle_bot_chat_invite_requester
 from functions.channel_table_operations import create_channel
 from handlers.callback_handlers.start_subscribing import send_subscription_buttons
-from menus import get_user_menu_text
+from handlers.callback_handlers.withdrawl_handler import handle_withdrawal_balance
+from menus import get_user_menu_text, get_admin_menu_text
+
 import json
 from telethon import Button
 
@@ -25,15 +27,29 @@ BOT_TOKEN = secrets["BOT_TOKEN"]
 
 client = TelegramClient("bot_session", API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 
+messages_to_delete = []
+
 
 @client.on(events.NewMessage(pattern="/start"))
 async def handle_start_wrapper(event):
-    await handle_start(event)
+    await handle_start(event, client)
 
 
 @client.on(events.NewMessage(pattern="/set_admin"))
 async def set_admin_handler_wrapper(event):
     await handle_set_admin(event)
+
+
+@client.on(events.NewMessage(pattern="/menu"))
+async def menu_handler(event):
+    user_id = event.sender_id
+    session = SessionLocal()
+    user = session.query(User).filter(User.telegram_id == user_id).first()
+    if user.is_admin_session_active:
+        await get_admin_menu_text(event)
+    else:
+        await get_user_menu_text(event, user, session)
+    session.close()
 
 
 @client.on(events.NewMessage(pattern="/add_admin_channel"))
@@ -60,6 +76,27 @@ async def handle_start_subscribing(event):
 @client.on(events.Raw(types.UpdateBotChatInviteRequester))
 async def approve(e):
     await handle_bot_chat_invite_requester(e)
+
+
+@client.on(events.NewMessage(pattern="/sub_all"))
+async def handle_sub_all(event):
+    user_id = event.sender_id
+    session = SessionLocal()
+
+    try:
+        user = session.query(User).filter(User.telegram_id == user_id).first()
+
+        if user:
+            user.subscribed_all = True
+            session.commit()
+            await event.respond("Ви успішно підписались на всі канали!")
+
+        else:
+            await event.respond("Користувача не знайдено в базі даних.")
+    except Exception as e:
+        logging.error(f"Помилка при обробці команди /sub_all: {e}")
+    finally:
+        session.close()
 
 
 @client.on(events.NewMessage(pattern="/add_channel"))
@@ -95,6 +132,35 @@ async def handle_check_subscription_all(event):
         "Для точної та коректної роботи, відправте запит на вступ у всі канали ще раз.",
         buttons=[[continue_button]],
     )
+    messages_to_delete.append(event.query.msg_id)
+
+
+@client.on(events.CallbackQuery(pattern=b"continue_subscription"))
+async def handle_continue_subscription(event):
+    user_id = event.sender_id
+    session = SessionLocal()
+    user = session.query(User).filter(User.telegram_id == user_id).first()
+    messages_to_delete.append(event.query.msg_id)
+
+    await event.client.delete_messages(event.chat_id, messages_to_delete)
+    messages_to_delete.clear()
+    await event.respond(
+        "Заявка на перевірку підписок була відправлена. Ваш баланс буде поповнено після підтвердження."
+    )
+    await get_user_menu_text(event, user, session)
+
+
+@client.on(events.CallbackQuery(pattern=b"ref_link"))
+async def handle_referral_link(event):
+    user_id = event.sender_id
+    referral_link = f"<code>https://t.me/SubToDinero_bot?start={user_id}</code>"
+    message_text = "Це ваше реферальне посилання. За кожного запрошеного друга ви отримаєте +10 балів"
+    await event.respond(f"{message_text}\n\n{referral_link}", parse_mode="html")
+
+
+@client.on(events.CallbackQuery(pattern=b"withdrawl_balance"))
+async def callback_withdrawal_balance_handler(event):
+    await handle_withdrawal_balance(event, client)
 
 
 if __name__ == "__main__":

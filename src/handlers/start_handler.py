@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 
 
-async def handle_start(event):
+async def handle_start(event, client):
     user_id = event.sender_id
     username = event.sender.username
 
@@ -49,7 +49,22 @@ async def handle_start(event):
             session.add(new_user)
             session.commit()
             session.refresh(new_user)
-
+            referal_message = event.message.message.split(" ")
+            if len(referal_message) > 1:
+                ref_link_owner = (
+                    session.query(User)
+                    .filter(User.telegram_id == referal_message[1])
+                    .first()
+                )
+                if ref_link_owner:
+                    ref_link_owner.balance += 10
+                    new_user.balance += 10
+                    session.commit()
+                    await client.send_message(
+                        types.PeerUser(ref_link_owner.telegram_id),
+                        "Ви отримали +10 до балансу за реферала",
+                    )
+                    await event.respond("Ви отримали +10 до балансу вiд реферала")
             logging.info(
                 f"Новый пользователь: Telegram ID={new_user.telegram_id}, "
                 f"Время создания={new_user.first_start_date.strftime('%Y-%m-%d %H:%M:%S')}"
