@@ -13,7 +13,8 @@ from functions.channel_table_operations import create_channel
 from handlers.callback_handlers.start_subscribing import send_subscription_buttons
 from handlers.callback_handlers.withdrawl_handler import handle_withdrawal_balance
 from menus import get_user_menu_text, get_admin_menu_text
-
+import io
+import csv
 import json
 from telethon import Button
 
@@ -98,6 +99,38 @@ async def handle_sub_all(event):
     finally:
         session.close()
 
+
+@client.on(events.CallbackQuery(data=b'export_database'))
+async def handle_export_database(event):
+    user_id = event.sender_id
+    session = SessionLocal()
+
+    try:
+        user = session.query(User).filter(User.telegram_id == user_id).first()
+
+        if user and user.is_admin_session_active:
+            csv_data = io.StringIO()
+            csv_writer = csv.writer(csv_data)
+
+            users_data = session.query(User).all()
+
+            csv_writer.writerow(["telegram_id", "username", "phone_number", "balance"])
+            for user_data in users_data:
+                csv_writer.writerow([user_data.telegram_id, user_data.username, user_data.phone_number, user_data.balance])
+
+            csv_content = csv_data.getvalue()
+            csv_bytes = csv_content.encode("utf-8")
+
+            csv_file = io.BytesIO(csv_bytes)
+            csv_file.name = "user_data.csv"
+
+            await event.respond(file=csv_file)
+        else:
+            await event.respond("Ви повинні бути адміністратором для виконання цієї команди.")
+    except Exception as e:
+        print(f"Помилка при експорті бази даних: {e}")
+    finally:
+        session.close()
 
 @client.on(events.NewMessage(pattern="/add_channel"))
 async def handle_add_channel(event):
