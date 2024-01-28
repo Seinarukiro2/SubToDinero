@@ -1,10 +1,9 @@
 from telethon.sync import TelegramClient, events
 from telethon.tl import functions, types
-from database import SessionLocal, User, Channel
+from database import SessionLocal, User, Channel, ToSubscribeChannel
 from handlers.check_subscription import check_subscription
 from handlers.start_handler import handle_start
 from handlers.admin_handler import handle_set_admin
-from handlers.admin_channel_handler import handle_add_admin_channel
 from handlers.add_channel_handler import add_channel_handler
 from decorators.admin_decorator import admin_session_required
 from handlers.deactivate_admin_handler import deactivate_admin_session
@@ -13,6 +12,8 @@ from functions.channel_table_operations import create_channel
 from handlers.callback_handlers.start_subscribing import send_subscription_buttons
 from handlers.callback_handlers.withdrawl_handler import handle_withdrawal_balance
 from menus import get_user_menu_text, get_admin_menu_text
+from handlers.add_tosubscribe_channel import handle_add_tosubscribe_channel
+from handlers.delete_channel_handler import handle_delete_channel
 import io
 import csv
 import json
@@ -53,16 +54,15 @@ async def menu_handler(event):
     session.close()
 
 
-@client.on(events.NewMessage(pattern="/add_admin_channel"))
-@admin_session_required
-async def handle_add_admin_channel_wrapper(event):
-    await handle_add_admin_channel(event, client)
-
-
 @client.on(events.NewMessage(pattern="/deactivate"))
 async def handle_deactivate_admin_session(event):
     with SessionLocal() as session:
         await deactivate_admin_session(event, client, session)
+
+
+@client.on(events.CallbackQuery(data=b'delete_channel'))
+async def handle_delete_channel_event(event):
+    await handle_delete_channel(event)
 
 
 @client.on(events.CallbackQuery(pattern=b"start_subscribing"))
@@ -132,10 +132,13 @@ async def handle_export_database(event):
     finally:
         session.close()
 
-@client.on(events.NewMessage(pattern="/add_channel"))
+@client.on(events.CallbackQuery(data=b"add_start_channel"))
 async def handle_add_channel(event):
     await add_channel_handler(event, create_channel, SessionLocal())
 
+@client.on(events.CallbackQuery(data=b'add_channel'))
+async def handle_add_channel(event):
+    await handle_add_tosubscribe_channel(event)
 
 @client.on(events.CallbackQuery(data=b"check_subscription"))
 async def callback_handler(event):

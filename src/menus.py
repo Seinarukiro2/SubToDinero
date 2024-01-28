@@ -34,11 +34,13 @@ async def get_admin_menu_text(event):
     # Создание кнопок для админ-меню
     add_start_channel_button = Button.inline("Додати старт-канал", b"add_start_channel")
     add_channel_button = Button.inline("Додати канал", b"add_channel")
+    delete_channel = Button.inline("Видалити канал", b"delete_channel")
     export_database_button = Button.inline("Експорт бази даних", b"export_database")
 
     buttons = [
         [add_start_channel_button],
         [add_channel_button],
+        [delete_channel],
         [export_database_button],
     ]
 

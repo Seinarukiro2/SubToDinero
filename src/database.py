@@ -77,7 +77,8 @@ class User(Base):
 class ToSubscribeChannel(Base):
     __tablename__ = "to_subscribe_channels"
 
-    name = Column(String, primary_key=True, unique=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
     link = Column(String)
     subscribers = relationship(
         "User",

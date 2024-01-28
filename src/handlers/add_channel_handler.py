@@ -11,7 +11,7 @@ async def add_channel_handler(event, create_channel, session):
 
     async with event.client.conversation(event.chat_id) as conv:
         await conv.send_message(
-            "Введіть дані нового каналу у форматі: id - name - link"
+            "Введіть дані нового каналу у форматі: id - name - link \n\n Бот обязательно должен быть админом канала который вы добавляете!!!"
         )
 
         response = await conv.get_response()
